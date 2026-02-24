@@ -1,7 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
-import { Platform, StyleSheet } from 'react-native';
-
-import { Text, View } from '@/components/Themed';
+import { Platform, View, Text, StyleSheet } from 'react-native';
+import { colors } from '../constants/theme';
 
 export default function ModalScreen() {
   return (
@@ -15,11 +14,13 @@ export default function ModalScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colors.bg,
     alignItems: 'center',
     justifyContent: 'center',
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
+    color: colors.text,
   },
 });

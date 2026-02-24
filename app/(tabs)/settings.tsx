@@ -1,6 +1,5 @@
-import { StyleSheet } from 'react-native';
-
-import { Text, View } from '@/components/Themed';
+import { View, Text, StyleSheet } from 'react-native';
+import { colors } from '../../constants/theme';
 
 export default function SettingsScreen() {
   return (
@@ -13,11 +12,13 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colors.bg,
     alignItems: 'center',
     justifyContent: 'center',
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
+    color: colors.text,
   },
 });
