@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "CheckMySurf-mobile",
-    "slug": "CheckMySurf-mobile",
+    "name": "CheckMySurf",
+    "slug": "CheckMySurf",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "checkmysurfmobile",
+    "scheme": "checkmysurf",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
