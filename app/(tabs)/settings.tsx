@@ -21,9 +21,12 @@ export default function SettingsScreen() {
           style={styles.picker}
           itemStyle={styles.pickerItem}
         >
-          {beaches.map(b => (
-            <Picker.Item key={b.slug} label={b.name} value={b.slug} />
-          ))}
+          {beaches.length === 0
+            ? <Picker.Item label="Loading beaches..." value={homeSpot} />
+            : beaches.map(b => (
+                <Picker.Item key={b.slug} label={b.name} value={b.slug} />
+              ))
+          }
         </Picker>
       </View>
 
@@ -50,7 +53,11 @@ export default function SettingsScreen() {
         maximumValue={8}
         step={0.5}
         value={prefs.minWave}
-        onSlidingComplete={(v) => updatePrefs({ ...prefs, minWave: v })}
+        onSlidingComplete={(v) => updatePrefs({
+          ...prefs,
+          minWave: v,
+          maxWave: Math.max(prefs.maxWave, v),
+        })}
         minimumTrackTintColor={colors.blue}
         maximumTrackTintColor={colors.textDim}
         thumbTintColor={colors.blue}
@@ -63,7 +70,11 @@ export default function SettingsScreen() {
         maximumValue={12}
         step={0.5}
         value={prefs.maxWave}
-        onSlidingComplete={(v) => updatePrefs({ ...prefs, maxWave: v })}
+        onSlidingComplete={(v) => updatePrefs({
+          ...prefs,
+          maxWave: v,
+          minWave: Math.min(prefs.minWave, v),
+        })}
         minimumTrackTintColor={colors.blue}
         maximumTrackTintColor={colors.textDim}
         thumbTintColor={colors.blue}
