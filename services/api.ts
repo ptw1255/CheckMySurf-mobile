@@ -12,10 +12,6 @@ async function getBaseUrl(): Promise<string> {
   return cachedBaseUrl;
 }
 
-export function resetBaseUrl(): void {
-  cachedBaseUrl = null;
-}
-
 async function fetchJson<T>(path: string): Promise<T> {
   const base = await getBaseUrl();
   const controller = new AbortController();
