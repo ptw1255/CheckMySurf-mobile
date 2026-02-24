@@ -7,10 +7,9 @@ interface Props {
   hourly: HourlySurf[];
 }
 
-function fmtHour(timeStr: string): string {
+function fmtHour(timeStr: string, now: Date): string {
   const d = new Date(timeStr);
   const h = d.getHours();
-  const now = new Date();
   if (d.getHours() === now.getHours() && d.toDateString() === now.toDateString()) return 'Now';
   if (h === 0) return '12a';
   if (h < 12) return h + 'a';
@@ -23,6 +22,16 @@ export function HourlyTimeline({ hourly }: Props) {
   const currentHour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours()).getTime();
   const startIdx = hourly.findIndex(h => new Date(h.time).getTime() >= currentHour);
   const hours = hourly.slice(Math.max(startIdx, 0), Math.max(startIdx, 0) + 24);
+
+  if (hours.length === 0) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>Surf Timeline</Text>
+        <Text style={{ color: colors.textDim, fontSize: 12 }}>No hourly data available</Text>
+      </View>
+    );
+  }
+
   const maxWave = Math.max(...hours.map(h => h.waveHeightFt), 1);
 
   return (
@@ -34,9 +43,9 @@ export function HourlyTimeline({ hourly }: Props) {
           const clr = scoreColor(h.qualityScore);
           return (
             <View key={i} style={styles.hour}>
-              <Text style={styles.time}>{fmtHour(h.time)}</Text>
+              <Text style={styles.time}>{fmtHour(h.time, now)}</Text>
               <View style={styles.barWrap}>
-                <View style={[styles.bar, { height: `${Math.max(barPct, 8)}%`, backgroundColor: clr }]} />
+                <View style={[styles.bar, { height: Math.max(barPct, 8) * 0.7, backgroundColor: clr }]} />
               </View>
               <Text style={[styles.wave, { color: clr }]}>{h.waveHeightFt}'</Text>
               <Text style={styles.period}>{h.wavePeriodS}s</Text>
