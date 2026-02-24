@@ -3,16 +3,33 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DEFAULT_API_URL } from '../constants/config';
 import type { BeachSummary, BeachData, WeatherData } from '../types';
 
+let cachedBaseUrl: string | null = null;
+
 async function getBaseUrl(): Promise<string> {
+  if (cachedBaseUrl !== null) return cachedBaseUrl;
   const stored = await AsyncStorage.getItem('apiUrl');
-  return stored || DEFAULT_API_URL;
+  cachedBaseUrl = stored || DEFAULT_API_URL;
+  return cachedBaseUrl;
+}
+
+export function resetBaseUrl(): void {
+  cachedBaseUrl = null;
 }
 
 async function fetchJson<T>(path: string): Promise<T> {
   const base = await getBaseUrl();
-  const res = await fetch(`${base}${path}`);
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
-  return res.json();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000);
+  try {
+    const res = await fetch(`${base}${path}`, { signal: controller.signal });
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      throw new Error(`API ${res.status} on ${path}: ${body}`);
+    }
+    return res.json();
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 export const api = {
