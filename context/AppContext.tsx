@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '../services/api';
 import type { BeachSummary, BeachData, WeatherData, UserPrefs } from '../types';
@@ -36,6 +36,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [prefs, setPrefs] = useState<UserPrefs>(defaultPrefs);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [initialized, setInitialized] = useState(false);
 
   // Load persisted settings on mount
   useEffect(() => {
@@ -52,6 +53,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (storedPrefs) setPrefs(JSON.parse(storedPrefs));
       } catch {
         // Ignore storage errors on mount
+      } finally {
+        setInitialized(true);
       }
     })();
   }, []);
@@ -68,36 +71,37 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setBeaches(beachesList);
       setBeachData(beach);
       setWeatherData(weather);
-    } catch (e: any) {
-      setError(e.message || 'Failed to connect to server');
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Failed to connect to server');
     } finally {
       setLoading(false);
     }
   }, [selectedSlug]);
 
-  // Refresh when selected beach changes
-  useEffect(() => { refresh(); }, [refresh]);
+  // Refresh when initialized or selected beach changes
+  useEffect(() => {
+    if (initialized) refresh();
+  }, [initialized, refresh]);
 
-  const selectBeach = (slug: string) => setSelectedSlug(slug);
+  const selectBeach = useCallback((slug: string) => setSelectedSlug(slug), []);
 
-  const setHomeSpot = async (slug: string) => {
+  const setHomeSpot = useCallback(async (slug: string) => {
     setHomeSpotState(slug);
-    await AsyncStorage.setItem('homeSpot', slug);
-  };
+    try { await AsyncStorage.setItem('homeSpot', slug); } catch {}
+  }, []);
 
-  const updatePrefs = async (newPrefs: UserPrefs) => {
+  const updatePrefs = useCallback(async (newPrefs: UserPrefs) => {
     setPrefs(newPrefs);
-    await AsyncStorage.setItem('surfPrefs', JSON.stringify(newPrefs));
-  };
+    try { await AsyncStorage.setItem('surfPrefs', JSON.stringify(newPrefs)); } catch {}
+  }, []);
 
-  return (
-    <AppContext.Provider value={{
-      beaches, selectedSlug, homeSpot, beachData, weatherData,
-      prefs, loading, error, selectBeach, setHomeSpot, updatePrefs, refresh,
-    }}>
-      {children}
-    </AppContext.Provider>
-  );
+  const value = useMemo(() => ({
+    beaches, selectedSlug, homeSpot, beachData, weatherData,
+    prefs, loading, error, selectBeach, setHomeSpot, updatePrefs, refresh,
+  }), [beaches, selectedSlug, homeSpot, beachData, weatherData,
+       prefs, loading, error, selectBeach, setHomeSpot, updatePrefs, refresh]);
+
+  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
 
 export function useApp() {
