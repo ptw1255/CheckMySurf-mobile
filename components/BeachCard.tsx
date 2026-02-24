@@ -1,4 +1,5 @@
 // components/BeachCard.tsx
+import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { colors, ratingColors } from '../constants/theme';
 import type { BeachSummary } from '../types';
@@ -7,22 +8,25 @@ interface Props {
   beach: BeachSummary;
   isActive: boolean;
   isHome: boolean;
-  onPress: () => void;
-  onStar: () => void;
+  onPress: (slug: string) => void;
+  onStar: (slug: string) => void;
 }
 
-export function BeachCard({ beach, isActive, isHome, onPress, onStar }: Props) {
+function BeachCardInner({ beach, isActive, isHome, onPress, onStar }: Props) {
+  const handlePress = () => onPress(beach.slug);
+  const handleStar = () => onStar(beach.slug);
+
   return (
     <Pressable
       style={[styles.card, isActive && styles.active]}
-      onPress={onPress}
+      onPress={handlePress}
     >
       <View style={[styles.dot, { backgroundColor: ratingColors[beach.ratingColor] || colors.red }]} />
       <View style={styles.info}>
         <Text style={styles.name}>{beach.name}</Text>
         <Text style={styles.stats}>{beach.waveHeightFt}ft · {beach.surfRating}</Text>
       </View>
-      <Pressable onPress={onStar} hitSlop={8}>
+      <Pressable onPress={handleStar} hitSlop={8}>
         <Text style={[styles.star, isHome && styles.starred]}>
           {isHome ? '\u2605' : '\u2606'}
         </Text>
@@ -30,6 +34,8 @@ export function BeachCard({ beach, isActive, isHome, onPress, onStar }: Props) {
     </Pressable>
   );
 }
+
+export const BeachCard = React.memo(BeachCardInner);
 
 const styles = StyleSheet.create({
   card: {
